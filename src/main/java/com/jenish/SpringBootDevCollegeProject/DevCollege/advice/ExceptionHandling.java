@@ -1,5 +1,7 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.advice;
+import com.jenish.SpringBootDevCollegeProject.DevCollege.Service.EnrolmentService;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
+import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.EnrolmentNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,15 +28,22 @@ public class ExceptionHandling {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(CourseNotFoundException.class)
     public Map<String, String> handleBusinessException(CourseNotFoundException exception) {
-        Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("errorMessage", exception.getMessage());
-        return errorMap;
+        Map<String, String> courseException = new HashMap<>();
+        courseException.put("errorMessage", exception.getMessage());
+        return courseException;
     }
 
     @ExceptionHandler(StudentNotFoundException.class)
     public Map<String, String> handleBusinessException(StudentNotFoundException exception) {
-        Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("errorMessage", exception.getMessage());
-        return errorMap;
+        Map<String, String> studentException = new HashMap<>();
+        studentException.put("errorMessage", exception.getMessage());
+        return studentException;
+    }
+
+    @ExceptionHandler(EnrolmentNotFoundException.class)
+    public Map<String, String> handleBusinessException(EnrolmentNotFoundException exception) {
+        Map<String, String> enrolmentException = new HashMap<>();
+        enrolmentException.put("errorMessage", exception.getMessage());
+        return enrolmentException;
     }
 }

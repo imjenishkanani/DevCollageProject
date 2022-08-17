@@ -29,10 +29,9 @@ public class CourseServiceImpl implements CourseService {
 
 //            Course course = modelMapper.map(courseRequest, Course.class);
 
-            courseRepository.save(CourseModel.modelToEntity(courseModel));
-            return "******** Successfully added course detail for Course Id: " + courseModel.getCourseId() + " ********";
+            Course course = courseRepository.save(CourseModel.modelToEntity(courseModel));
+            return "******** Successfully added course detail for Course Id: " + course.getCourseId() + " ********";
         } catch(Exception e) {
-
             return "******** Failed to add course details!!! ******** " +e.getMessage();
         }
     }

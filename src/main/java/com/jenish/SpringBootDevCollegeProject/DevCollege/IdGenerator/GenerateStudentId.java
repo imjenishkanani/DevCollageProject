@@ -22,15 +22,13 @@ public class GenerateStudentId implements IdentifierGenerator {
             ResultSet rs = statement.executeQuery("select count(student_id) as Id from Student");
 
             if (rs.next()) {
-                if(rs.getInt(1)<9) {
-                    String id =(String.format("%03d", 0)+(rs.getInt(1)+1));
-                    String generatedId = prefix + id;
-                    return generatedId;
-                }else {
-                    String id = (String.format("%02d", 0)+(rs.getInt(1)+1));
-                    String generatedId = prefix + id;
-                    return generatedId;
+                int num = rs.getInt(1) + 1;
+                StringBuilder id = new StringBuilder("" + num);
+                for (int i = 0; i < 4 - (String.valueOf(num).length()); i++) {
+                    id.insert(0, "0");
                 }
+                id.insert(0, prefix);
+                return id.toString();
             }
         } catch (SQLException e) {
             e.printStackTrace();

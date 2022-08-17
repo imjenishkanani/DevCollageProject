@@ -26,7 +26,7 @@ public class CourseModel {
     private String courseDescription;
 
     @Min(value = 1)
-    @Pattern(regexp = "[0-9]", message = "Number of Registration Allowed field accepts only numeric value")
+    //@Pattern(regexp = "[0-9]", message = "Number of Registration Allowed field accepts only numeric value")
     @NotNull(message="Number of Registration Allowed field is required")
     private Integer noOfRegAllowed;
 

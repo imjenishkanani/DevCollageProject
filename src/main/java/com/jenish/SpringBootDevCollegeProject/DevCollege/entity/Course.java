@@ -21,15 +21,7 @@ import java.util.List;
 @Builder
 public class Course {
 
-//    @GeneratedValue(
-//            strategy = GenerationType.SEQUENCE,
-//            generator = "course_id generator"
-//    )
-//    @GenericGenerator(
-//            name = "course_id generator",
-//            strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.entity.PrefixedCourseIdGenerator",
-//            parameters = { @Parameter(name = PrefixCourseIdGenerator)}
-//    )
+
     @Id
     @GenericGenerator(name = "courseId",strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.IdGenerator.GenerateCourseId")
     @GeneratedValue(
@@ -62,7 +54,7 @@ public class Course {
             name = "courseId",
             referencedColumnName = "courseId"
     )
-    private List<Enrolment> enrolment;
+    private List<Enrolment> allEnrolments;
 
 //    @NotNull(message="Course Name is required")
 //    private String courseName;
@@ -81,5 +73,5 @@ public class Course {
 //    @Pattern(regexp = "^[0-9]*$", message = "Course Duration accepts only numeric value")
 //    private Integer courseDuration;
 //    @NotNull(message = "Course Tag is required")
-//    private String courseTag;
+    //    private String courseTag;
 }

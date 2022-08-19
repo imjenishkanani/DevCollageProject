@@ -5,6 +5,7 @@ import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl.CourseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -26,7 +27,7 @@ public class CourseController {
     }
 
     @GetMapping("/course/getAll")
-    public List<Course> getAllCourses() {
+    public List<Course> getAllCourses() throws CourseNotFoundException{
         return courseService.getCourses();
     }
 

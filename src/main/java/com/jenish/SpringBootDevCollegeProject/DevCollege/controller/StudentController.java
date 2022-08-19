@@ -39,7 +39,7 @@ public class StudentController {
     }
 
     @GetMapping("/student/getAll")
-    public List<Student> getAllCourses() {
+    public List<Student> getAllCourses() throws StudentNotFoundException{
         return studentService.getStudents();
     }
 

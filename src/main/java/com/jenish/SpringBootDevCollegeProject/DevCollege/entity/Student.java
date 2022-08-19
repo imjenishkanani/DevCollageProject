@@ -31,5 +31,5 @@ public class Student {
             name = "studentId",
             referencedColumnName = "studentId"
     )
-    private List<Enrolment> enrolment;
+    private List<Enrolment> allEnrolments;
 }

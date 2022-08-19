@@ -25,9 +25,10 @@ public class EnrolmentModel {
     @NotNull(message = "Course start date is required")
     private ZonedDateTime courseStartDateTime;
     //@NotNull(message = "Course end date is required")
-    private Date courseEndDateTime;
+    private ZonedDateTime courseEndDateTime;
     //@NotNull(message = "Course status is required")
     private String courseStatus;
+
 
     public static Enrolment modelToEntity(EnrolmentModel model) {
         Enrolment entity = new Enrolment();

@@ -26,6 +26,9 @@ public class Enrolment {
     private String courseId;
     private String studentId;
     private ZonedDateTime CourseStartDateTime;
-    private Date CourseEndDateTime;
+    private ZonedDateTime CourseEndDateTime;
     private String CourseStatus;
+    //i added 19-08
+    private String courseLink;
+    private String studentLink;
 }

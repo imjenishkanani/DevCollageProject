@@ -3,9 +3,12 @@ package com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.Service.StudentService;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.StudentModel;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
+import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Enrolment;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Student;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
+import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.CourseRepository;
+import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.EnrolmentRepository;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +26,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private EnrolmentRepository enrolmentRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
 
     @Override
     public String saveStudent(StudentModel studentModel) {
@@ -43,8 +52,6 @@ public class StudentServiceImpl implements StudentService {
             studentToBeUpdated.setStudentName(student.getStudentName());
             studentToBeUpdated.setHighestQualification(student.getHighestQualification());
             studentToBeUpdated.setStudentContactNo(student.getStudentContactNo());
-            studentToBeUpdated.setWalletAmount(student.getWalletAmount());
-
 
             studentRepository.save(studentToBeUpdated);
             return "******** Successfully updated student detail for Course: " + studentId + " ********";
@@ -66,9 +73,35 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public String deleteStudentById(String studenId) throws StudentNotFoundException {
         Student student = studentRepository.findById(studenId).orElse(null);
+        List<Enrolment> allEnrolments = enrolmentRepository.findAll();
+        Student enroledStudent;
+        Course course;
+        int cnt = 0;
+        Float totalFeesOfEnrolledCourse = 0.0f;
+        Float feesToBeRefund;
+
+
+
         if (student != null) {
+
+            // cancelled enrolled course of student and calculate refunded amount.
+            for(Enrolment enrolment: allEnrolments) {
+                if(enrolment.getStudentId().equals(studenId)) {
+                    enrolment.setCourseStatus("Cancelled");
+                    String enroledCourseId = enrolment.getCourseId();
+                    course = courseRepository.findById(enroledCourseId).orElse(null);
+
+                    //TODO : slots should be updated or not?
+
+                    totalFeesOfEnrolledCourse = totalFeesOfEnrolledCourse + course.getCourseFees();
+                }
+            }
+            feesToBeRefund = totalFeesOfEnrolledCourse / 2;
+
+            // deleting student.
             studentRepository.deleteById(studenId);
-            return "******** Successfully deleted student detail for Student Id: " + student + " ********";
+            return "Successfully deleted student detail for Student Id: " + studenId + " Amount RS. " + feesToBeRefund +
+                    " will be refunded in original payment method in 24 hours.";
         } else {
             throw new StudentNotFoundException("Student Id: " + studenId + " doesn't exist.");
         }
@@ -85,8 +118,18 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<Student> getStudents() {
-        return studentRepository.findAll();
+    public List<Student> getStudents() throws StudentNotFoundException {
+
+        //return studentRepository.findAll();
+
+        List<Course> allStudents = new ArrayList<>();
+        allStudents = courseRepository.findAll();
+
+        if(allStudents != null) {
+            return studentRepository.findAll();
+        } else {
+            throw new StudentNotFoundException("NO DATA FOUND!!!");
+        }
     }
 
     @Override

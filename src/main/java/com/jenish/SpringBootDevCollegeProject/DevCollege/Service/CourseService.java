@@ -9,8 +9,9 @@ import java.util.List;
 public interface CourseService {
     public String saveCourse(CourseModel courseModel);
     public String updateCourseById(Course course,String courseId) throws CourseNotFoundException;
-    public List<Course> getCourses();
+    public List<Course> getCourses() throws CourseNotFoundException;
     public Course CourseById(String courseId) throws CourseNotFoundException;
     public String deleteCourseById(String courseId) throws CourseNotFoundException;
+
 
 }

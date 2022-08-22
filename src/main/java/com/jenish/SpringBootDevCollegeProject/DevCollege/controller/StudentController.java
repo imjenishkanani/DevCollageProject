@@ -1,9 +1,8 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.controller;
 
+import com.jenish.SpringBootDevCollegeProject.DevCollege.Service.StudentService;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.StudentModel;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Student;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl.StudentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +12,10 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController 
 public class StudentController {
     @Autowired
-    private StudentServiceImpl studentService;
+    private StudentService studentService;
 
     @PostMapping("/student/addStudent")
     public String addStudent(@RequestBody @Valid StudentModel studentModel) {
@@ -44,7 +43,7 @@ public class StudentController {
     }
 
     @PostMapping("/student/StudentWallet/{studentId}")
-    public String addWalletAmount(@PathVariable String studentId, @RequestBody Student AmountRequest) throws StudentNotFoundException{
+    public String addWalletAmount(@Valid @PathVariable String studentId, @RequestBody Student AmountRequest) throws StudentNotFoundException{
         return studentService.walletAmount(studentId, AmountRequest);
     }
 

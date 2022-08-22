@@ -2,14 +2,10 @@ package com.jenish.SpringBootDevCollegeProject.DevCollege.controller;
 
 import com.jenish.SpringBootDevCollegeProject.DevCollege.Service.EnrolmentService;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.EnrolmentModel;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Enrolment;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.EnrolmentNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl.CourseServiceImpl;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl.EnrolmentServiceImpl;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl.StudentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +16,10 @@ import java.util.Map;
 @RestController
 public class EnrolmentController {
     @Autowired
-    EnrolmentServiceImpl enrolmentService;
+    EnrolmentService enrolmentService;
 
     @PostMapping("/enrolment/addEnrolment")
-    public String addEnrolment(@RequestBody @Valid EnrolmentModel enrolmentModel) {
+    public String addEnrolment(@RequestBody @Valid EnrolmentModel enrolmentModel) throws CourseNotFoundException, StudentNotFoundException {
         return enrolmentService.saveEnrolment(enrolmentModel);
     }
 
@@ -48,7 +44,7 @@ public class EnrolmentController {
     }
 
     @PostMapping("/enrolment/status/{enrolmentId}")
-    public String changeStatus(@PathVariable String enrolmentId) {
+    public String changeStatus(@PathVariable String enrolmentId) throws EnrolmentNotFoundException {
         return enrolmentService.updateStatus(enrolmentId);
     }
 

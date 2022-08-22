@@ -1,10 +1,8 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.Service;
 
 import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.StudentModel;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Student;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;

@@ -1,14 +1,16 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 @Entity
 @Data
@@ -28,7 +30,6 @@ public class Enrolment {
     private ZonedDateTime CourseStartDateTime;
     private ZonedDateTime CourseEndDateTime;
     private String CourseStatus;
-    //i added 19-08
     private String courseLink;
     private String studentLink;
 }

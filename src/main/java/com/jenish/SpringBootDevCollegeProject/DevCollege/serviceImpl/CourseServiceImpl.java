@@ -1,5 +1,4 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.serviceImpl;
-//import org.modelmapper.ModelMapper;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.Service.CourseService;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.CourseModel;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
@@ -9,7 +8,6 @@ import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.CourseReposi
 import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.EnrolmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +15,11 @@ import java.util.List;
 @Service
 public class CourseServiceImpl implements CourseService {
 
-//    @Autowired
-//    private ModelMapper modelMapper;
     @Autowired
     private CourseRepository courseRepository;
 
     @Autowired
     private EnrolmentRepository enrolmentRepository;
-
-//    @Autowired
-//    public void setModelMapper(ModelMapper modelMapper) {
-//        this.modelMapper = modelMapper;
-//    }
 
     @Override
     public String saveCourse(CourseModel courseModel) {
@@ -36,8 +27,8 @@ public class CourseServiceImpl implements CourseService {
 //            Course course = modelMapper.map(courseRequest, Course.class);
             List<Course> allCourses = new ArrayList<>();
             allCourses = courseRepository.findAll();
-            System.out.println(allCourses);
-            System.out.println(allCourses.contains(courseModel.getCourseName()));
+//            System.out.println(allCourses);
+//            System.out.println(allCourses.contains(courseModel.getCourseName()));
             int cnt = 0;
             for(Course course : allCourses) {
                 if(course.getCourseName().equals(courseModel.getCourseName())) {
@@ -45,7 +36,6 @@ public class CourseServiceImpl implements CourseService {
                     break;
                 }
             }
-
             if(cnt > 0) {
                 return "Course: [" + courseModel.getCourseName() + "] is already exist!!";
             } else {
@@ -53,9 +43,9 @@ public class CourseServiceImpl implements CourseService {
                 return "******** Successfully added course detail for Course Id: " + course.getCourseId() + " ********";
             }
         } catch(Exception e) {
-            return "******** Failed to add course details!!! ******** " +e.getMessage();
+            System.out.println("-----------------" + e + "----------------------");
+            return "******** Failed to add course details!!! ******** ";
         }
-//        throw new CourseNotFoundException("Faile to addc ou");
     }
 
     @Override
@@ -64,7 +54,7 @@ public class CourseServiceImpl implements CourseService {
             Course courseToBeUpdated = courseRepository.findById(courseId).orElse(null);
             if(courseToBeUpdated != null) {
                 List<Enrolment> allEnrolments = new ArrayList<>();
-                //List<Enrolment> courseIdEnrolments = new ArrayList<>();
+
                 int courseAllocationCounter = 0;
 
                 allEnrolments = enrolmentRepository.findAll();
@@ -83,9 +73,6 @@ public class CourseServiceImpl implements CourseService {
                     courseToBeUpdated.setCourseName(course.getCourseName());
                     courseToBeUpdated.setCourseDescription(course.getCourseDescription());
                     courseToBeUpdated.setNoOfRegAllowed(course.getNoOfRegAllowed());
-//                    courseToBeUpdated.setCourseFees(course.getCourseFees());
-//                    courseToBeUpdated.setCourseDuration(course.getCourseDuration());
-//                    courseToBeUpdated.setCourseTag(course.getCourseTag());
 
                     courseRepository.save(courseToBeUpdated);
                     return "******** Successfully updated course detail for Course: " + courseId +
@@ -104,15 +91,6 @@ public class CourseServiceImpl implements CourseService {
             } else {
                 throw new CourseNotFoundException("Course Id: " + courseId + " doesn't exist.");
             }
-       // } catch(Exception e) {
-         //   return "Failed to update course detail!";
-        //}
-//        private String courseName;
-//        private String courseDescription;
-//        private Integer noOfRegAllowed;
-//        private Float courseFees;
-//        private Integer courseDuration;
-//        private String courseTag;
     }
 
     @Override
@@ -120,8 +98,8 @@ public class CourseServiceImpl implements CourseService {
         List<Course> allCourses = new ArrayList<>();
         allCourses = courseRepository.findAll();
 
-        if(allCourses != null) {
-            return courseRepository.findAll();
+        if(allCourses.size() != 0) {
+            return courseRepository.getAllCourse();
         } else {
             throw new CourseNotFoundException("NO DATA FOUND!!!");
         }
@@ -129,7 +107,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course CourseById(String courseId) throws CourseNotFoundException{
-        Course course = courseRepository.findById(courseId).orElse(null);
+        Course course = courseRepository.findByCourseId(courseId);
         if(course != null) {
 
             return course;
@@ -140,21 +118,11 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public String deleteCourseById(String courseId) throws CourseNotFoundException {
-        Course course = courseRepository.findById(courseId).orElse(null);
-//        try {
-//            if(courseRepository.existsById(courseId)) {
-//
-//                courseRepository.deleteById(courseId);
-//                return "******** Course: " + courseId + " deleted successfully... ********";
-//            } else {
-//                return "******** Course: " + courseId + " doesn't exist!!! ********";
-//            }
-//        } catch(Exception e) {
-//            return "Failed to delete course detail!";
-//        }
+        Course course = courseRepository.findByCourseId(courseId);
+
         if(course != null) {
             List<Enrolment> allEnrolments = new ArrayList<>();
-            //List<Enrolment> courseIdEnrolments = new ArrayList<>();
+
             int courseAllocationCounter = 0;
 
             allEnrolments = enrolmentRepository.findAll();
@@ -174,7 +142,7 @@ public class CourseServiceImpl implements CourseService {
                         " ********\nCourse Id: " + courseId + " is already allocated to student.";
             } else {
 
-                courseRepository.deleteById(courseId);
+                courseRepository.deleteCourseByCourseId(courseId);
                 return "******** Course: " + courseId + " deleted successfully... ********";
             }
         } else {

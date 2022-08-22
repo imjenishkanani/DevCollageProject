@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -28,7 +30,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     @Autowired
     CourseRepository courseRepository;
     @Override
-    public String saveEnrolment(EnrolmentModel enrolmentModel) {
+    public String saveEnrolment(EnrolmentModel enrolmentModel) throws CourseNotFoundException, StudentNotFoundException {
 
         String studentId = enrolmentModel.getStudentId();
         String courseId = enrolmentModel.getCourseId();
@@ -36,7 +38,8 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         Student student = studentRepository.findById(studentId).orElse(null);
         Course course = courseRepository.findById(courseId).orElse(null);
         Enrolment enrolment;
-
+        if(course != null) {
+            if(student != null) {
         Float studentWallet = student.getWalletAmount();
         Float feesOfCourse = course.getCourseFees();
         Integer slotsOfCourse = course.getNoOfRegAllowed();
@@ -48,104 +51,82 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
         allEnroll = enrolmentRepository.findAll();
 
-//        int cnt1=0;
-//        for(Enrolment e : allEnroll) {
-////            System.out.println(e.getStudentId());
-////            System.out.println(enrolmentModel.getStudentId());
-//            if(e.getStudentId().equals(enrolmentModel.getStudentId() ))
-//            {
-////                System.out.println(e.getCourseId());
-////                System.out.println(enrolmentModel.getCourseId());
-//                if (e.getCourseId() != enrolmentModel.getCourseId()) {
-//                    cnt1++;
-//                    break;
-//                }
-//            }
-//        }
-
         int cnt=0;
-        //int cnt1=0;
+        int cnt1=0;
         for(Enrolment e : allEnroll) {
-//            System.out.println(e.getStudentId());
-//            System.out.println(enrolmentModel.getStudentId());
             if(e.getStudentId().equals(enrolmentModel.getStudentId() ))
             {
-//                System.out.println(e.getCourseId());
-//                System.out.println(enrolmentModel.getCourseId());
                     if (e.getCourseId().equals(enrolmentModel.getCourseId())) {
                         cnt++;
-                        break;
+
                     }
-//                    else {
-//
-//                        //otherEnrolments.add(e);
-//                        if(enrolmentModel.getCourseStartDateTime().isAfter(e.getCourseStartDateTime())&&
-//                                enrolmentModel.getCourseStartDateTime().isBefore(e.getCourseEndDateTime())) {
-//                            cnt1++;
-//                        }
-//                    }
+
+                        if(enrolmentModel.getCourseStartDateTime().isAfter(e.getCourseStartDateTime())&&
+                                enrolmentModel.getCourseStartDateTime().isBefore(e.getCourseEndDateTime())) {
+                            cnt1++;
+                        }
             }
         }
-
-        // enrolled in other course in between
-
-
-        if(cnt > 0) {
-            return "You have already enrolled in Course Id: " + enrolmentModel.getCourseId();
-        } else {
-            try {
-
-                if (slotsOfCourse > 0) {
-//                    if (cnt1 > 0) {
-//                        System.out.println("counter of already enrolled : " + cnt1);
-                        if (studentWallet >= feesOfCourse) {
-                            enrolment = enrolmentRepository.save(EnrolmentModel.modelToEntity(enrolmentModel));
-
-                            //System.out.println(enrolmentModel.getCourseId());
-                            walletAfterEnrol = studentWallet - feesOfCourse;
-                            slotsAfterEnrol = slotsOfCourse - 1;
-
-                            //updating wallet amount
-                            student.setWalletAmount(walletAfterEnrol);
-
-                            //updating slots
-                            course.setNoOfRegAllowed(slotsAfterEnrol);
-
-                            //update course status
-                            enrolment.setCourseStatus("Allocated");
-
-                            //updating the course end date time
-                            ZonedDateTime sdt = enrolmentModel.getCourseStartDateTime();
-                            ZonedDateTime edt = sdt.plusDays(course.getCourseDuration());
-                            enrolment.setCourseEndDateTime(edt);
-                            System.out.println(edt);
-
-                            //saving updates related wallet amount
-                            studentRepository.save(student);
-
-                            //saving updates related course slots
-                            courseRepository.save(course);
-
-                            return "Successfully Enrolled for " + student.getStudentName() + " in Course name " + course.getCourseName() + " for enrolment id " + enrolment.getEnrolmentId();
-                        } else {
-                            return "You are not allowed enrol in this course!!";
-                        }
-//                    } else {
-//                        return "Already enroled in other course in this course time duration";
-//                    }
+                if (cnt > 0) {
+                    return "You have already enrolled in Course Id: " + enrolmentModel.getCourseId();
                 } else {
-                    return "Sorry... All Slots are filled!!";
+                    try {
+
+                        if (slotsOfCourse > 0) {
+                    if (!(cnt1 > 0)) {
+
+                            if (studentWallet >= feesOfCourse) {
+                                enrolment = enrolmentRepository.save(EnrolmentModel.modelToEntity(enrolmentModel));
+                                walletAfterEnrol = studentWallet - feesOfCourse;
+                                slotsAfterEnrol = slotsOfCourse - 1;
+
+                                student.setWalletAmount(walletAfterEnrol);
+                                course.setNoOfRegAllowed(slotsAfterEnrol);
+                                enrolment.setCourseStatus("Allocated");
+
+
+                                ZonedDateTime sdt = enrolmentModel.getCourseStartDateTime();
+                                ZonedDateTime edt = sdt.plusDays(course.getCourseDuration());
+                                enrolment.setCourseEndDateTime(edt);
+
+
+                                String viewCourseLink = "http://localhost:8080/course/getCourse/";
+                                String viewStudentLink = "http://localhost:8080/student/getStudent/";
+
+                                viewCourseLink = viewCourseLink + enrolment.getCourseId();
+                                viewStudentLink = viewStudentLink + enrolment.getStudentId();
+
+                                enrolment.setCourseLink(viewCourseLink);
+                                enrolment.setStudentLink(viewStudentLink);
+
+                                studentRepository.save(student);
+                                courseRepository.save(course);
+
+                                return "Successfully Enrolled for " + student.getStudentName() + " in Course name " + course.getCourseName() + " for enrolment id " + enrolment.getEnrolmentId();
+                            } else {
+                                return "You are not allowed enrol in this course!!";
+                            }
+                    } else {
+                        return "Already enroled in other course in this course time duration";
+                    }
+                        } else {
+                            return "Sorry... All Slots are filled!!";
+                        }
+                    } catch (Exception e) {
+                        return "Failed to enrol for this course!!";
+                    }
                 }
-            } catch (Exception e) {
-                return "Failed to enrol for this course!!";
+            } else {
+                throw new StudentNotFoundException("Student Id: " + studentId + " doesn't exist.");
             }
-       }
+        } else {
+            throw new CourseNotFoundException("Course Id: " + courseId + " doesn't exist.");
+        }
     }
 
     @Override
     public Enrolment enrolmentById(String enrolmentId) throws EnrolmentNotFoundException {
-        Enrolment enrolment = enrolmentRepository.findById(enrolmentId).orElse(null);
-
+        Enrolment enrolment = enrolmentRepository.findByEnrolmentId(enrolmentId);
         if(enrolment != null) {
             return enrolment;
         } else {
@@ -157,8 +138,8 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     public List<Enrolment> getAllEnrolment() throws EnrolmentNotFoundException {
         List<Enrolment> allEnrolments = new ArrayList<Enrolment>();
 
-        allEnrolments = enrolmentRepository.findAll();
-        if(allEnrolments != null) {
+        allEnrolments = enrolmentRepository.getAllEnrolments();
+        if(allEnrolments.size() != 0) {
             return allEnrolments;
         } else {
             throw new EnrolmentNotFoundException("No data found!!!");
@@ -170,8 +151,6 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         List<Enrolment> enrolmentsOfStudent = new ArrayList<Enrolment>();
         List<Enrolment> listWithLink = new ArrayList<>();
 
-        //Enrolment  = enrolmentRepository.findById(studentId).orElse(null);
-        //if(enrolmentOfStudent != null) {
         String viewCourseLink = "http://localhost:8080/course/getCourse/";
         String viewStudentLink = "http://localhost:8080/student/getStudent/";
 
@@ -184,13 +163,12 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                     viewCourseLink = viewCourseLink + enrolment.getCourseId();
                     viewStudentLink = viewStudentLink + enrolment.getStudentId();
 
-                    System.out.println(viewStudentLink);
-                    System.out.println(viewCourseLink);
-
                     enrolment.setCourseLink(viewCourseLink);
                     enrolment.setStudentLink(viewStudentLink);
 
                     listWithLink.add(enrolment);
+
+                    enrolmentRepository.save(enrolment);
                 }
              }
             return listWithLink;
@@ -212,90 +190,92 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     @Override
-    public String updateStatus(String enrolmentId) {
-        // enrolment
+    public String updateStatus(String enrolmentId) throws EnrolmentNotFoundException{
         Enrolment enrolment = enrolmentRepository.findById(enrolmentId).orElse(null);
-        ZonedDateTime courseStartDay = enrolment.getCourseStartDateTime();
 
-        enrolment.setCourseStatus("Cancelled");
-        ZonedDateTime currentDt = ZonedDateTime.now();
+        if(enrolment != null) {
 
-        Duration durationOfCancel = Duration.between(currentDt, courseStartDay);
-        //System.out.println(durationOfCancel.toHours());
+            ZonedDateTime courseStartDay = enrolment.getCourseStartDateTime();
 
-        // student
-        Student student = studentRepository.findById(enrolment.getStudentId()).orElse(null);
-        // course
-        Course course = courseRepository.findById(enrolment.getCourseId()).orElse(null);
-
-        Float refundAmount;
-        Float courseAmount;
-        Float studentWallet;
-        Float walletAfterCancelCourse;
-        Integer slots = 0;
-
-        if(durationOfCancel.toHours() >= 48) {
-            courseAmount = course.getCourseFees();
-            studentWallet = student.getWalletAmount();
-            slots = course.getNoOfRegAllowed();
-
-            refundAmount = studentWallet + courseAmount;
-            student.setWalletAmount(refundAmount);
             enrolment.setCourseStatus("Cancelled");
+            ZonedDateTime currentDt = ZonedDateTime.now();
 
-            course.setNoOfRegAllowed(slots+1);
+            Duration durationOfCancel = Duration.between(currentDt, courseStartDay);
 
-            enrolmentRepository.save(enrolment);
-            studentRepository.save(student);
-            courseRepository.save(course);
+            Student student = studentRepository.findById(enrolment.getStudentId()).orElse(null);
+            Course course = courseRepository.findById(enrolment.getCourseId()).orElse(null);
 
-            return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
-        } else if(durationOfCancel.toHours() >= 24) {
-            courseAmount = course.getCourseFees();
-            studentWallet = student.getWalletAmount();
-            slots = course.getNoOfRegAllowed();
+            Float refundAmount;
+            Float courseAmount;
+            Float studentWallet;
+            Float walletAfterCancelCourse;
+            Integer slots = 0;
 
-            refundAmount = (courseAmount * 70) / 100;
-            System.out.println(refundAmount);
+            if (durationOfCancel.toHours() >= 48) {
+                courseAmount = course.getCourseFees();
+                studentWallet = student.getWalletAmount();
+                slots = course.getNoOfRegAllowed();
 
-            walletAfterCancelCourse = studentWallet + refundAmount;
-            System.out.println(walletAfterCancelCourse);
+                refundAmount = studentWallet + courseAmount;
+                student.setWalletAmount(refundAmount);
+                enrolment.setCourseStatus("Cancelled");
 
-            student.setWalletAmount(walletAfterCancelCourse);
-            enrolment.setCourseStatus("Cancelled");
+                course.setNoOfRegAllowed(slots + 1);
 
-            course.setNoOfRegAllowed(slots+1);
+                enrolmentRepository.save(enrolment);
+                studentRepository.save(student);
+                courseRepository.save(course);
 
-            enrolmentRepository.save(enrolment);
-            studentRepository.save(student);
-            courseRepository.save(course);
+                return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+            } else if (durationOfCancel.toHours() >= 24) {
+                courseAmount = course.getCourseFees();
+                studentWallet = student.getWalletAmount();
+                slots = course.getNoOfRegAllowed();
+
+                refundAmount = (courseAmount * 70) / 100;
 
 
-            return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
-        } else if(durationOfCancel.toHours() >= 12) {
-            courseAmount = course.getCourseFees();
-            studentWallet = student.getWalletAmount();
-            slots = course.getNoOfRegAllowed();
+                walletAfterCancelCourse = studentWallet + refundAmount;
 
-            refundAmount = (courseAmount * 50) / 100;
-            walletAfterCancelCourse = studentWallet + refundAmount;
 
-            student.setWalletAmount(walletAfterCancelCourse);
-            enrolment.setCourseStatus("Cancelled");
+                student.setWalletAmount(walletAfterCancelCourse);
+                enrolment.setCourseStatus("Cancelled");
 
-            course.setNoOfRegAllowed(slots+1);
+                course.setNoOfRegAllowed(slots + 1);
 
-            enrolmentRepository.save(enrolment);
-            studentRepository.save(student);
-            courseRepository.save(course);
+                enrolmentRepository.save(enrolment);
+                studentRepository.save(student);
+                courseRepository.save(course);
 
-            return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+
+                return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+            } else if (durationOfCancel.toHours() >= 12) {
+                courseAmount = course.getCourseFees();
+                studentWallet = student.getWalletAmount();
+                slots = course.getNoOfRegAllowed();
+
+                refundAmount = (courseAmount * 50) / 100;
+                walletAfterCancelCourse = studentWallet + refundAmount;
+
+                student.setWalletAmount(walletAfterCancelCourse);
+                enrolment.setCourseStatus("Cancelled");
+
+                course.setNoOfRegAllowed(slots + 1);
+
+                enrolmentRepository.save(enrolment);
+                studentRepository.save(student);
+                courseRepository.save(course);
+
+                return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+            } else {
+                enrolment.setCourseStatus("Cancelled");
+                course.setNoOfRegAllowed(slots + 1);
+                enrolmentRepository.save(enrolment);
+                courseRepository.save(course);
+                return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+            }
         } else {
-            enrolment.setCourseStatus("Cancelled");
-            course.setNoOfRegAllowed(slots+1);
-            enrolmentRepository.save(enrolment);
-            courseRepository.save(course);
-            return "Successfully change the status from Allocated to Cancelled for Enrolment Id: " + enrolmentId;
+            throw new EnrolmentNotFoundException("Enrolment Id: " + enrolmentId + " doesn't exist.");
         }
     }
 
@@ -316,29 +296,21 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     @Override
     public Map<String, String> courseSuggest(String studentId) throws StudentNotFoundException{
-        //System.out.println("course suggesion called");
         Student student = studentRepository.findById(studentId).orElse(null);
         List<Course> allCourses = new ArrayList<>();
         Map<String, String> courseSuggessionMap = new HashMap<>();
 
         allCourses = courseRepository.findAll();
-        System.out.println("All course :" + allCourses.size());
-        System.out.println(student);
 
         String courseTagLowerCase;
         String qualificationLowerCase;
 
         if(student != null) {
             for (Course course : allCourses) {
-                //System.out.println("Course tag :" + course.getCourseTag() + " stud qualification : " + student.getHighestQualification());
-                //System.out.println(course.getCourseTag());
-
-                // to ignore case
                 courseTagLowerCase = course.getCourseTag().toLowerCase();
                 qualificationLowerCase = student.getHighestQualification().toLowerCase();
 
                 if (courseTagLowerCase.contains(qualificationLowerCase)) {
-                    System.out.println("inside.....");
                     courseSuggessionMap.put(course.getCourseId(), course.getCourseName());
                 }
             }

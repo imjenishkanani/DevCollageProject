@@ -5,12 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.*;
 
 @Data
 @AllArgsConstructor
@@ -18,15 +13,16 @@ import javax.validation.constraints.Positive;
 
 public class StudentModel {
     private String studentId;
-    @NotNull(message = "Student Name is required")
+    @NotBlank(message = "Student Name is required")
     private String studentName;
-    @NotNull(message = "Highest Qualification is required")
+    @NotBlank(message = "Highest Qualification is required")
     private String highestQualification;
-    @NotNull(message = "Student Contact number is required")
+    @NotBlank(message = "Student Contact number is required")
     @Pattern(regexp = "^\\d{10}$", message = "Contact number 10-digit numeric")
     private String studentContactNo;
     @Positive
-    @Min(value = 1)
+    @Max(value = 1000, message = "Please, Do not enter wallet amount more than Rs. 1000")
+    @Min(value = 0)
     private Float walletAmount;
 
     public static Student ModelToEntity(StudentModel studentModel) {

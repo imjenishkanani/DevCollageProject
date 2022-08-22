@@ -5,17 +5,13 @@ import com.jenish.SpringBootDevCollegeProject.DevCollege.dto.StudentModel;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Course;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Enrolment;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Student;
-import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.CourseRepository;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.EnrolmentRepository;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +22,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentRepository studentRepository;
+
     @Autowired
     private EnrolmentRepository enrolmentRepository;
 
@@ -35,17 +32,16 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public String saveStudent(StudentModel studentModel) {
 
-        //try {
+        try {
         Student student =  studentRepository.save(StudentModel.ModelToEntity(studentModel));
         return "******** Successfully added student detail for Student Id: " + student.getStudentId() + " ********";
-        //} catch(Exception e) {
-        //  return "******** Failed to add student details!!! ******** " +e.getMessage();
-        // }
+        } catch(Exception e) {
+          return "******** Failed to add student details!!! ******** " +e.getMessage();
+         }
     }
 
     @Override
     public String updateStudentById(Student student, String studentId) throws StudentNotFoundException {
-        //try {
         Student studentToBeUpdated = studentRepository.findById(studentId).orElse(null);
         if (studentToBeUpdated != null) {
 
@@ -58,15 +54,6 @@ public class StudentServiceImpl implements StudentService {
         } else {
             throw new StudentNotFoundException("Course Id: " + studentId + " doesn't exist.");
         }
-        // } catch(Exception e) {
-        //   return "Failed to update course detail!";
-        //}
-//        private String courseName;
-//        private String courseDescription;
-//        private Integer noOfRegAllowed;
-//        private Float courseFees;
-//        private Integer courseDuration;
-//        private String courseTag;
     }
 
 
@@ -84,21 +71,18 @@ public class StudentServiceImpl implements StudentService {
 
         if (student != null) {
 
-            // cancelled enrolled course of student and calculate refunded amount.
+
             for(Enrolment enrolment: allEnrolments) {
                 if(enrolment.getStudentId().equals(studenId)) {
                     enrolment.setCourseStatus("Cancelled");
                     String enroledCourseId = enrolment.getCourseId();
                     course = courseRepository.findById(enroledCourseId).orElse(null);
 
-                    //TODO : slots should be updated or not?
-
                     totalFeesOfEnrolledCourse = totalFeesOfEnrolledCourse + course.getCourseFees();
                 }
             }
             feesToBeRefund = totalFeesOfEnrolledCourse / 2;
 
-            // deleting student.
             studentRepository.deleteById(studenId);
             return "Successfully deleted student detail for Student Id: " + studenId + " Amount RS. " + feesToBeRefund +
                     " will be refunded in original payment method in 24 hours.";
@@ -109,7 +93,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student StudentById(String studentId) throws StudentNotFoundException {
-        Student student = studentRepository.findById(studentId).orElse(null);
+        Student student = studentRepository.findByStudentId(studentId);
         if (student != null) {
             return student;
         } else {
@@ -119,9 +103,6 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<Student> getStudents() throws StudentNotFoundException {
-
-        //return studentRepository.findAll();
-
         List<Course> allStudents = new ArrayList<>();
         allStudents = courseRepository.findAll();
 

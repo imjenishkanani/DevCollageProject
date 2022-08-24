@@ -11,12 +11,18 @@ import java.util.Map;
 
 public interface EnrolmentService {
     public String saveEnrolment(EnrolmentModel enrolmentModel) throws CourseNotFoundException, StudentNotFoundException;
-    public Enrolment enrolmentById(String enrolmentId) throws EnrolmentNotFoundException;
 
-    public List<Enrolment> getAllEnrolment() throws EnrolmentNotFoundException;
+    public Map<String, String> enrolmentById(String enrolmentId) throws EnrolmentNotFoundException;
+
+    public List<Map<String, String>> getAllEnrolment() throws EnrolmentNotFoundException;
+
     public List<Enrolment> enrolmentOfStudentById(String studentId) throws StudentNotFoundException;
+
     public String removeEnrolmentById(String enrolmentId) throws EnrolmentNotFoundException;
+
     public String updateStatus(String enrolmentId) throws EnrolmentNotFoundException;
+
     public String checkCourseAvailability(String courseId) throws CourseNotFoundException;
+
     public Map<String, String> courseSuggest(String studentId) throws StudentNotFoundException;
 }

@@ -31,13 +31,12 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public String saveStudent(StudentModel studentModel) {
-
         try {
-        Student student =  studentRepository.save(StudentModel.ModelToEntity(studentModel));
-        return "******** Successfully added student detail for Student Id: " + student.getStudentId() + " ********";
-        } catch(Exception e) {
-          return "******** Failed to add student details!!! ******** " +e.getMessage();
-         }
+            Student student = studentRepository.save(StudentModel.ModelToEntity(studentModel));
+            return "******** Successfully added student detail for Student Id: " + student.getStudentId() + " ********";
+        } catch (Exception e) {
+            return "******** Failed to add student details!!! ******** " + e.getMessage();
+        }
     }
 
     @Override
@@ -56,7 +55,6 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-
     @Override
     public String deleteStudentById(String studenId) throws StudentNotFoundException {
         Student student = studentRepository.findById(studenId).orElse(null);
@@ -68,12 +66,9 @@ public class StudentServiceImpl implements StudentService {
         Float feesToBeRefund;
 
 
-
         if (student != null) {
-
-
-            for(Enrolment enrolment: allEnrolments) {
-                if(enrolment.getStudentId().equals(studenId)) {
+            for (Enrolment enrolment : allEnrolments) {
+                if (enrolment.getStudentId().equals(studenId)) {
                     enrolment.setCourseStatus("Cancelled");
                     String enroledCourseId = enrolment.getCourseId();
                     course = courseRepository.findById(enroledCourseId).orElse(null);
@@ -106,7 +101,7 @@ public class StudentServiceImpl implements StudentService {
         List<Course> allStudents = new ArrayList<>();
         allStudents = courseRepository.findAll();
 
-        if(allStudents != null) {
+        if (allStudents != null) {
             return studentRepository.findAll();
         } else {
             throw new StudentNotFoundException("NO DATA FOUND!!!");
@@ -114,25 +109,29 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public String walletAmount(String studentId, Student AmountRequest) throws StudentNotFoundException{
+    public String walletAmount(String studentId, Student amountRequest) throws StudentNotFoundException {
 
-        Student student  = studentRepository.findById(studentId).orElse(null);
-        Float walletAmt;
-        if(student != null) {
-            walletAmt = student.getWalletAmount();
-            walletAmt = walletAmt + AmountRequest.getWalletAmount();
-            student.setWalletAmount(walletAmt);
-            studentRepository.save(student);
-            return "******** Successfully added amount for Student Id: " + student.getStudentId() + " and available balance is RS. " + student.getWalletAmount() + " ********";
+        Student student = studentRepository.findById(studentId).orElse(null);
+        Double walletAmt;
+        if (student != null) {
+            if (amountRequest.getWalletAmount() > 0) {
+                walletAmt = student.getWalletAmount();
+                walletAmt = walletAmt + amountRequest.getWalletAmount();
+                student.setWalletAmount(walletAmt);
+                studentRepository.save(student);
+                return "******** Successfully added amount for Student Id: " + student.getStudentId() + " and available balance is RS. " + student.getWalletAmount() + " ********";
+            } else {
+                return "Please enter only positive amount!!";
+            }
         } else {
-            throw new StudentNotFoundException("Student Id: " + AmountRequest.getStudentId() + " doesn't exist.");
+            throw new StudentNotFoundException("Student Id: " + amountRequest.getStudentId() + " doesn't exist.");
         }
     }
 
     @Override
-    public Map<String,String> getWallet(String studentId) throws StudentNotFoundException{
+    public Map<String, String> getWallet(String studentId) throws StudentNotFoundException {
         Student student = studentRepository.findById(studentId).orElse(null);
-        if(student != null) {
+        if (student != null) {
             Map<String, String> studentWallet = new HashMap<>();
             studentWallet.put("studentId", student.getStudentId());
             studentWallet.put("amount", student.getWalletAmount().toString());

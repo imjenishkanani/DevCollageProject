@@ -1,4 +1,5 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.advice;
+
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.CourseNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.EnrolmentNotFoundException;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.exception.StudentNotFoundException;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ public class ExceptionHandling {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> HandlingInvalidArgument(MethodArgumentNotValidException exception) {
         Map<String, String> errorMap = new HashMap<>();
-        exception.getBindingResult().getFieldErrors().forEach(error->{
+        exception.getBindingResult().getFieldErrors().forEach(error -> {
             errorMap.put(error.getField(), error.getDefaultMessage());
         });
         return errorMap;
@@ -27,7 +29,7 @@ public class ExceptionHandling {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Map<String, String> HandlingInvalidInput(HttpMessageNotReadableException exception) {
         Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("Input Error","Please enter valid input");
+        errorMap.put("Input Error", "Please enter valid input");
         return errorMap;
     }
 

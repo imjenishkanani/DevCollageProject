@@ -15,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EnrolmentServiceImpl implements EnrolmentService {
@@ -29,6 +31,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     StudentRepository studentRepository;
     @Autowired
     CourseRepository courseRepository;
+
     @Override
     public String saveEnrolment(EnrolmentModel enrolmentModel) throws CourseNotFoundException, StudentNotFoundException {
 
@@ -38,77 +41,75 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         Student student = studentRepository.findById(studentId).orElse(null);
         Course course = courseRepository.findById(courseId).orElse(null);
         Enrolment enrolment;
-        if(course != null) {
-            if(student != null) {
-        Float studentWallet = student.getWalletAmount();
-        Float feesOfCourse = course.getCourseFees();
-        Integer slotsOfCourse = course.getNoOfRegAllowed();
-        Float walletAfterEnrol;
-        Integer slotsAfterEnrol;
 
-        List<Enrolment> allEnroll = new ArrayList<>();
-        List<Enrolment> otherEnrolments = new ArrayList<>();
+        if(course == null && student == null) { return "Student Id: " + studentId
+                + " And Course Id: " + courseId + " Both are invalid!!"; }
 
-        allEnroll = enrolmentRepository.findAll();
+        if (course != null) {
+            if (student != null) {
+                Double studentWallet = student.getWalletAmount();
+                Float feesOfCourse = course.getCourseFees();
+                Integer slotsOfCourse = course.getNoOfRegAllowed();
+                Double walletAfterEnrol;
+                Integer slotsAfterEnrol;
 
-        int cnt=0;
-        int cnt1=0;
-        for(Enrolment e : allEnroll) {
-            if(e.getStudentId().equals(enrolmentModel.getStudentId() ))
-            {
-                    if (e.getCourseId().equals(enrolmentModel.getCourseId())) {
-                        cnt++;
+                List<Enrolment> allEnroll = new ArrayList<>();
+                List<Enrolment> otherEnrolments = new ArrayList<>();
 
-                    }
+                allEnroll = enrolmentRepository.findAll();
 
-                        if(enrolmentModel.getCourseStartDateTime().isAfter(e.getCourseStartDateTime())&&
+                int cnt = 0;
+                int cnt1 = 0;
+                for (Enrolment e : allEnroll) {
+                    if (e.getStudentId().equals(enrolmentModel.getStudentId())) {
+                        if (e.getCourseId().equals(enrolmentModel.getCourseId())) {
+                            cnt++;
+                        }
+                        if (enrolmentModel.getCourseStartDateTime().isAfter(e.getCourseStartDateTime()) &&
                                 enrolmentModel.getCourseStartDateTime().isBefore(e.getCourseEndDateTime())) {
                             cnt1++;
                         }
-            }
-        }
+                    }
+                }
                 if (cnt > 0) {
                     return "You have already enrolled in Course Id: " + enrolmentModel.getCourseId();
                 } else {
                     try {
 
                         if (slotsOfCourse > 0) {
-                    if (!(cnt1 > 0)) {
+                            if (!(cnt1 > 0)) {
+                                if (studentWallet >= feesOfCourse) {
+                                    enrolment = enrolmentRepository.save(EnrolmentModel.modelToEntity(enrolmentModel));
+                                    walletAfterEnrol = studentWallet - (double) feesOfCourse;
+                                    slotsAfterEnrol = slotsOfCourse - 1;
 
-                            if (studentWallet >= feesOfCourse) {
-                                enrolment = enrolmentRepository.save(EnrolmentModel.modelToEntity(enrolmentModel));
-                                walletAfterEnrol = studentWallet - feesOfCourse;
-                                slotsAfterEnrol = slotsOfCourse - 1;
+                                    student.setWalletAmount(walletAfterEnrol);
+                                    course.setNoOfRegAllowed(slotsAfterEnrol);
+                                    enrolment.setCourseStatus("Allocated");
 
-                                student.setWalletAmount(walletAfterEnrol);
-                                course.setNoOfRegAllowed(slotsAfterEnrol);
-                                enrolment.setCourseStatus("Allocated");
+                                    ZonedDateTime sdt = enrolmentModel.getCourseStartDateTime();
+                                    ZonedDateTime edt = sdt.plusDays(course.getCourseDuration());
+                                    enrolment.setCourseEndDateTime(edt);
 
+                                    String viewCourseLink = "http://localhost:8080/course/getCourse/";
+                                    String viewStudentLink = "http://localhost:8080/student/getStudent/";
 
-                                ZonedDateTime sdt = enrolmentModel.getCourseStartDateTime();
-                                ZonedDateTime edt = sdt.plusDays(course.getCourseDuration());
-                                enrolment.setCourseEndDateTime(edt);
+                                    viewCourseLink = viewCourseLink + enrolment.getCourseId();
+                                    viewStudentLink = viewStudentLink + enrolment.getStudentId();
 
+                                    enrolment.setCourseLink(viewCourseLink);
+                                    enrolment.setStudentLink(viewStudentLink);
 
-                                String viewCourseLink = "http://localhost:8080/course/getCourse/";
-                                String viewStudentLink = "http://localhost:8080/student/getStudent/";
+                                    studentRepository.save(student);
+                                    courseRepository.save(course);
 
-                                viewCourseLink = viewCourseLink + enrolment.getCourseId();
-                                viewStudentLink = viewStudentLink + enrolment.getStudentId();
-
-                                enrolment.setCourseLink(viewCourseLink);
-                                enrolment.setStudentLink(viewStudentLink);
-
-                                studentRepository.save(student);
-                                courseRepository.save(course);
-
-                                return "Successfully Enrolled for " + student.getStudentName() + " in Course name " + course.getCourseName() + " for enrolment id " + enrolment.getEnrolmentId();
+                                    return "Successfully Enrolled for " + student.getStudentName() + " in Course name " + course.getCourseName() + " for enrolment id " + enrolment.getEnrolmentId();
+                                } else {
+                                    return "You are not allowed enrol in this course!!";
+                                }
                             } else {
-                                return "You are not allowed enrol in this course!!";
+                                return "Already enroled in other course in this course time duration";
                             }
-                    } else {
-                        return "Already enroled in other course in this course time duration";
-                    }
                         } else {
                             return "Sorry... All Slots are filled!!";
                         }
@@ -125,22 +126,51 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     @Override
-    public Enrolment enrolmentById(String enrolmentId) throws EnrolmentNotFoundException {
+    public Map<String, String> enrolmentById(String enrolmentId) throws EnrolmentNotFoundException {
         Enrolment enrolment = enrolmentRepository.findByEnrolmentId(enrolmentId);
-        if(enrolment != null) {
-            return enrolment;
+
+        if (enrolment != null) {
+            Student student = studentRepository.findByStudentId(enrolment.getStudentId());
+            Course course = courseRepository.findByCourseId(enrolment.getCourseId());
+
+            Map<String, String> enrolmentMap = new HashMap<>();
+            enrolmentMap.put("enrolmentId", enrolment.getEnrolmentId());
+            enrolmentMap.put("studentId", enrolment.getStudentId());
+            enrolmentMap.put("studentName", student.getStudentName());
+            enrolmentMap.put("courseId", enrolment.getCourseId());
+            enrolmentMap.put("courseName", course.getCourseName());
+
+            ZonedDateTime courseStartDt = enrolment.getCourseStartDateTime();
+            ZonedDateTime courseEndDt = enrolment.getCourseEndDateTime();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY/MM/dd HH:mm:ss");
+
+            String formatedCourseStartDt = courseStartDt.format(formatter);
+            String formatedCourseEndDt = courseEndDt.format(formatter);
+
+            enrolmentMap.put("courseStartDateTime", formatedCourseStartDt);
+            enrolmentMap.put("courseEndDateTime", formatedCourseEndDt);
+            enrolmentMap.put("courseStatus", enrolment.getCourseStatus());
+            enrolmentMap.put("courseLink", enrolment.getCourseLink());
+            enrolmentMap.put("studentLink", enrolment.getStudentLink());
+
+            return enrolmentMap;
         } else {
             throw new EnrolmentNotFoundException("Enrolment Id: " + enrolmentId + " doesn't exist.");
         }
     }
 
     @Override
-    public List<Enrolment> getAllEnrolment() throws EnrolmentNotFoundException {
+    public List<Map<String, String>> getAllEnrolment() throws EnrolmentNotFoundException {
         List<Enrolment> allEnrolments = new ArrayList<Enrolment>();
+        List<Map<String, String>> allenrol = new ArrayList<>();
 
         allEnrolments = enrolmentRepository.getAllEnrolments();
-        if(allEnrolments.size() != 0) {
-            return allEnrolments;
+        if (allEnrolments.size() != 0) {
+            for (Enrolment enrol : allEnrolments) {
+                allenrol.add(enrolmentById(enrol.getEnrolmentId()));
+            }
+            return allenrol;
         } else {
             throw new EnrolmentNotFoundException("No data found!!!");
         }
@@ -155,11 +185,11 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         String viewStudentLink = "http://localhost:8080/student/getStudent/";
 
         Student student = studentRepository.findById(studentId).orElse(null);
-        if(student != null) {
+        if (student != null) {
             enrolmentsOfStudent = student.getAllEnrolments();
 
-            for(Enrolment enrolment: enrolmentsOfStudent) {
-                if(enrolment.getCourseStatus().equals("Allocated")) {
+            for (Enrolment enrolment : enrolmentsOfStudent) {
+                if (enrolment.getCourseStatus().equals("Allocated")) {
                     viewCourseLink = viewCourseLink + enrolment.getCourseId();
                     viewStudentLink = viewStudentLink + enrolment.getStudentId();
 
@@ -170,7 +200,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
                     enrolmentRepository.save(enrolment);
                 }
-             }
+            }
             return listWithLink;
         } else {
             throw new StudentNotFoundException("Student Id: " + studentId + " does not enrol for any course.");
@@ -181,7 +211,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     public String removeEnrolmentById(String enrolmentId) throws EnrolmentNotFoundException {
         Enrolment enrolment = enrolmentRepository.findById(enrolmentId).orElse(null);
 
-        if(enrolment != null) {
+        if (enrolment != null) {
             enrolmentRepository.deleteById(enrolmentId);
             return "removed";
         } else {
@@ -190,10 +220,10 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     @Override
-    public String updateStatus(String enrolmentId) throws EnrolmentNotFoundException{
+    public String updateStatus(String enrolmentId) throws EnrolmentNotFoundException {
         Enrolment enrolment = enrolmentRepository.findById(enrolmentId).orElse(null);
 
-        if(enrolment != null) {
+        if (enrolment != null) {
 
             ZonedDateTime courseStartDay = enrolment.getCourseStartDateTime();
 
@@ -205,10 +235,10 @@ public class EnrolmentServiceImpl implements EnrolmentService {
             Student student = studentRepository.findById(enrolment.getStudentId()).orElse(null);
             Course course = courseRepository.findById(enrolment.getCourseId()).orElse(null);
 
-            Float refundAmount;
+            Double refundAmount;
             Float courseAmount;
-            Float studentWallet;
-            Float walletAfterCancelCourse;
+            Double studentWallet;
+            Double walletAfterCancelCourse;
             Integer slots = 0;
 
             if (durationOfCancel.toHours() >= 48) {
@@ -232,7 +262,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 studentWallet = student.getWalletAmount();
                 slots = course.getNoOfRegAllowed();
 
-                refundAmount = (courseAmount * 70) / 100;
+                refundAmount = Double.valueOf((courseAmount * 70) / 100);
 
 
                 walletAfterCancelCourse = studentWallet + refundAmount;
@@ -254,7 +284,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 studentWallet = student.getWalletAmount();
                 slots = course.getNoOfRegAllowed();
 
-                refundAmount = (courseAmount * 50) / 100;
+                refundAmount = Double.valueOf((courseAmount * 50) / 100);
                 walletAfterCancelCourse = studentWallet + refundAmount;
 
                 student.setWalletAmount(walletAfterCancelCourse);
@@ -282,7 +312,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     @Override
     public String checkCourseAvailability(String courseId) throws CourseNotFoundException {
         Course course = courseRepository.findById(courseId).orElse(null);
-        if(course != null) {
+        if (course != null) {
             if (course.getNoOfRegAllowed() >= 1) {
                 return courseId + " : " + course.getCourseName() + " available for enrolment. " +
                         "Total " + course.getNoOfRegAllowed() + " slots available";
@@ -295,7 +325,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     @Override
-    public Map<String, String> courseSuggest(String studentId) throws StudentNotFoundException{
+    public Map<String, String> courseSuggest(String studentId) throws StudentNotFoundException {
         Student student = studentRepository.findById(studentId).orElse(null);
         List<Course> allCourses = new ArrayList<>();
         Map<String, String> courseSuggessionMap = new HashMap<>();
@@ -305,7 +335,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         String courseTagLowerCase;
         String qualificationLowerCase;
 
-        if(student != null) {
+        if (student != null) {
             for (Course course : allCourses) {
                 courseTagLowerCase = course.getCourseTag().toLowerCase();
                 qualificationLowerCase = student.getHighestQualification().toLowerCase();

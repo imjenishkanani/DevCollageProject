@@ -17,28 +17,22 @@ public class CourseModel {
 
     private String courseId;
 
-//    @NotEmpty(message = "Course Name should not be empty!!")
-//    @NotNull(message="Course Name is required")
     @NotBlank(message = "Course Name is required")
     private String courseName;
 
-    @NotNull(message="Course Description is required")
-    //@Pattern(regexp = "^[0-9]*$", message = "Course Duration accepts only Alpha Numeric value")
+    @NotNull(message = "Course Description is required")
     private String courseDescription;
 
     @Min(value = 1)
-    //@Pattern(regexp = "[0-9]", message = "Number of Registration Allowed field accepts only numeric value")
-    @NotNull(message="Number of Registration Allowed field is required")
+    @NotNull(message = "Number of Registration Allowed field is required")
     private Integer noOfRegAllowed;
 
     @Min(value = 0)
-    //@Pattern(regexp = "[0-9]", message = "Course Fees accepts only numeric value")
-    @NotNull(message="Course Fees is required")
+    @NotNull(message = "Course Fees is required")
     private Float courseFees;
 
     @Positive(message = "Please enter valid course duration.")
-    @NotNull(message="Course Duration is required")
-//    @Pattern(regexp = "^[9]$", message = "Course Duration accepts only numeric value")
+    @NotNull(message = "Course Duration is required")
     private Integer courseDuration;
 
     @NotNull(message = "Course Tag is required")

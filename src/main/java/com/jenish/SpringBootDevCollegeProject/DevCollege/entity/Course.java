@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class Course {
     @Id
-    @GenericGenerator(name = "courseId",strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.IdGenerator.GenerateCourseId")
+    @GenericGenerator(name = "courseId", strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.IdGenerator.GenerateCourseId")
     @GeneratedValue(
             generator = "courseId"
     )

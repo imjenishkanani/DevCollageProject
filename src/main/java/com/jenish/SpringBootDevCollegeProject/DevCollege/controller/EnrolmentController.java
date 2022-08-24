@@ -17,45 +17,36 @@ import java.util.Map;
 public class EnrolmentController {
     @Autowired
     EnrolmentService enrolmentService;
-
     @PostMapping("/enrolment/addEnrolment")
     public String addEnrolment(@RequestBody @Valid EnrolmentModel enrolmentModel) throws CourseNotFoundException, StudentNotFoundException {
         return enrolmentService.saveEnrolment(enrolmentModel);
     }
-
     @GetMapping("/enrolment/getEnrolment/{enrolmentId}")
-    public Enrolment getEnrolmentById(@PathVariable String enrolmentId) throws EnrolmentNotFoundException {
+    public Map<String, String> getEnrolmentById(@PathVariable String enrolmentId) throws EnrolmentNotFoundException {
         return enrolmentService.enrolmentById(enrolmentId);
     }
-
     @GetMapping("/enrolment/getEnrolDetailOfStudent/{studentId}")
     public List<Enrolment> getEnrolmentDetailOfStudent(@PathVariable String studentId) throws StudentNotFoundException {
         return enrolmentService.enrolmentOfStudentById(studentId);
     }
-
     @GetMapping("/enrolment/getAll")
-    public List<Enrolment> getAllEnrolment() throws EnrolmentNotFoundException {
+    public List<Map<String, String>> getAllEnrolment() throws EnrolmentNotFoundException {
         return enrolmentService.getAllEnrolment();
     }
-
     @DeleteMapping("/enrolment/deleteEnrolment/{enrolmentId}")
     public String deleteEnrolmentById(@PathVariable String enrolmentId) throws EnrolmentNotFoundException {
         return enrolmentService.removeEnrolmentById(enrolmentId);
     }
-
     @PostMapping("/enrolment/status/{enrolmentId}")
     public String changeStatus(@PathVariable String enrolmentId) throws EnrolmentNotFoundException {
         return enrolmentService.updateStatus(enrolmentId);
     }
-
     @GetMapping("/courseAvailability/{courseId}")
     public String courseAvailability(@PathVariable String courseId) throws CourseNotFoundException {
         return enrolmentService.checkCourseAvailability(courseId);
     }
-
     @GetMapping("/Suggestion/{studentId}")
-    public Map<String, String> courseSuggestion(@PathVariable String studentId) throws StudentNotFoundException{
+    public Map<String, String> courseSuggestion(@PathVariable String studentId) throws StudentNotFoundException {
         return enrolmentService.courseSuggest(studentId);
     }
-
 }

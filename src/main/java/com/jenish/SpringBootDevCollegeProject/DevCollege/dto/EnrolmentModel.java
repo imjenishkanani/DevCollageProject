@@ -1,11 +1,11 @@
 package com.jenish.SpringBootDevCollegeProject.DevCollege.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jenish.SpringBootDevCollegeProject.DevCollege.entity.Enrolment;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -23,6 +23,8 @@ public class EnrolmentModel {
 
     @NotNull(message = "Student Id is required")
     private String studentId;
+
+    @FutureOrPresent(message = "Date must be a in present or in future time")
     @NotNull(message = "Course start date is required")
     private ZonedDateTime courseStartDateTime;
 

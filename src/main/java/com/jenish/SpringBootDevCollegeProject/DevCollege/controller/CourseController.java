@@ -22,12 +22,12 @@ public class CourseController {
     }
 
     @PutMapping("/course/updateCourse/{courseId}")
-    public String updateCourse(@RequestBody Course course,@PathVariable String courseId) throws CourseNotFoundException{
-            return courseService.updateCourseById(course,courseId);
+    public String updateCourse(@RequestBody Course course, @PathVariable String courseId) throws CourseNotFoundException {
+        return courseService.updateCourseById(course, courseId);
     }
 
     @GetMapping("/course/getAll")
-    public List<Course> getAllCourses() throws CourseNotFoundException{
+    public List<Course> getAllCourses() throws CourseNotFoundException {
         return courseService.getCourses();
     }
 
@@ -39,6 +39,6 @@ public class CourseController {
     @Transactional
     @DeleteMapping("/course/deleteCourse/{courseId}")
     public String deleteCourse(@PathVariable String courseId) throws CourseNotFoundException {
-       return courseService.deleteCourseById(courseId);
+        return courseService.deleteCourseById(courseId);
     }
 }

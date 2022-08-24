@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class Student {
     @Id
-    @GenericGenerator(name = "studentId",strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.IdGenerator.GenerateStudentId")
+    @GenericGenerator(name = "studentId", strategy = "com.jenish.SpringBootDevCollegeProject.DevCollege.IdGenerator.GenerateStudentId")
     @GeneratedValue(
             generator = "studentId"
     )
@@ -24,7 +24,7 @@ public class Student {
     private String studentName;
     private String highestQualification;
     private String studentContactNo;
-    private Float walletAmount;
+    private Double walletAmount;
 
     @OneToMany(targetEntity = Enrolment.class, cascade = CascadeType.ALL)
     @JoinColumn(
